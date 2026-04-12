@@ -2,10 +2,6 @@ import random
 import constants as const
 
 
-def probability(pheromone, distance):
-    return (pheromone ** alpha) * ((1 / distance) ** beta)
-
-
 class Ant:
     def __init__(self, start_node):
         self.current = start_node
@@ -18,7 +14,7 @@ class Ant:
         for p in const.paths_list:
             # Buscamos conexiones desde el nodo actual
             if p.node_origin == self.current:
-                # REGLA DE ORO: Solo considerar nodos NO visitados
+                # Solo considerar nodos NO visitados
                 if p.node_destination not in self.path:
                     neighbors.append(p)
         return neighbors

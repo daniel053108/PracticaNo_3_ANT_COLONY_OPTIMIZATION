@@ -8,12 +8,14 @@ nodes_directory = {}
 paths_list = []
 
 init_feromones = 1.0
+min_pheromone = 0.1
 evaporation_rate = 0.5
 alpha = 1      # importancia de feromona
 beta = 2       # importancia de distancia
-velocidad = 0.5
+velocidad = 0.1
 init_city = "Tijuana"
-final_city = "Villa Ahumada"
+final_city = "Rosarito"
+
 
 G = nx.Graph()
 

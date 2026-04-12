@@ -35,12 +35,12 @@ def update_pheromones(ants):
     # 1. EVAPORACIÓN
     for p in const.paths_list:
         p.pheromone *= (1 - const.evaporation_rate)
-        if p.pheromone < 0.01: p.pheromone = 0.01
+        if p.pheromone < const.min_pheromone: p.pheromone = const.min_pheromone
 
     # 2. DEPÓSITO
     for ant in ants:
         # IMPORTANTE: Que el destino sea el mismo que en la simulación
-        if ant.current.name == "Chihuahua":  
+        if ant.current.name == const.final_city:  
             reward = 1000 / ant.distance  # Aumenté el reward para que sea más notable
             for i in range(len(ant.path) - 1):
                 u = ant.path[i]
@@ -107,11 +107,21 @@ def draw_current_state(ants, current_iteration, current_ant_idx):
     # 1. Dibujar la infraestructura (Caminos y Ciudades)
     # Usamos grosores basados en feromona actual
     feromonas = [const.G[u][v].get('pheromone', 1) for u, v in const.G.edges()]
-    widths = [0.5 + (f * 1.0) for f in feromonas]
+    widths = [min(10.0,0.5 + (f * 1.0)) for f in feromonas]
+    edge_labels = nx.get_edge_attributes(const.G, 'weight')
     
-    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color='#CCCCCC', alpha=0.5)
+    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color="#150E0E", alpha=0.5)
     nx.draw_networkx_nodes(const.G, pos, node_size=600, node_color='white', edgecolors='black')
     nx.draw_networkx_labels(const.G, pos, font_size=7)
+
+    nx.draw_networkx_edge_labels(
+        const.G, 
+        pos, 
+        edge_labels=edge_labels, 
+        font_size=6,      # Tamaño pequeño para que no estorbe
+        font_color='red', # Color llamativo para diferenciarlo del mapa
+        label_pos=0.5     # 0.5 es justo en medio de la línea
+    )
 
     # 2. DIBUJAR LAS HORMIGAS (Puntos Rojos)
     # Extraemos la posición (X, Y) de la ciudad actual de cada hormiga activa
@@ -131,7 +141,7 @@ def draw_current_state(ants, current_iteration, current_ant_idx):
     plt.axis('off')
     
     plt.draw()
-    plt.pause(0.05) # <--- CONTROL DE VELOCIDAD POR PASO (0.05s es rápido pero visible)
+    plt.pause(const.velocidad) #CONTROL DE VELOCIDAD POR PASO (0.05s es rápido pero visible)
 
 def run_simulation(iteration_name=""):
     plt.clf()  # Limpiar la figura actual para el siguiente frame

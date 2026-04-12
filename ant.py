@@ -3,11 +3,13 @@ import constants as const
 
 
 class Ant:
-    def __init__(self, start_node):
+    def __init__(self, start_node, destination, origin):
         self.current = start_node
         self.path = [start_node]
         self.distance = 0
         self.finished = False
+        self.destination = destination
+        self.origin = origin
 
     def get_neighbors(self):
         neighbors = []

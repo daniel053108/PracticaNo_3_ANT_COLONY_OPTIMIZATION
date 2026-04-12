@@ -40,13 +40,13 @@ def update_pheromones(ants):
     # 2. DEPÓSITO
     for ant in ants:
         # IMPORTANTE: Que el destino sea el mismo que en la simulación
-        if ant.current.name == const.final_city:  
+        if ant.current.name == ant.destination:  
             reward = 1000 / ant.distance  # Aumenté el reward para que sea más notable
             for i in range(len(ant.path) - 1):
                 u = ant.path[i]
                 v = ant.path[i+1]
                 for p in const.paths_list:
-                    if p.node_origin == u and p.node_destination == v:
+                    if p.node_origin == u and p.node_destination == v or (p.node_origin == v and p.node_destination == u):
                         p.pheromone += reward
 
 def refresh_graph_data():
@@ -62,10 +62,8 @@ def run_aco_simulation(iterations, n_ants):
     start_node = const.nodes_directory[const.init_city]
     
     for i in range(iterations):
-        colony = [Ant(start_node) for _ in range(n_ants)]
+        colony = [Ant(start_node, const.final_city, const.init_city) for _ in range(n_ants)]
         
-        # Simulamos el movimiento paso a paso para TODA la colonia a la vez
-        # (Esto se ve mejor que mover una por una hasta el final)
         active_ants = True
         step = 0
         while active_ants and step < 50:
@@ -74,7 +72,7 @@ def run_aco_simulation(iterations, n_ants):
                 if not ant.finished:
                     if ant.move():
                         active_ants = True
-                        if ant.current.name == const.final_city:
+                        if ant.current.name == ant.destination:
                             ant.finished = True
                     else:
                         ant.finished = True # Atrapada
@@ -97,20 +95,19 @@ def run_aco_simulation(iterations, n_ants):
     
 def draw_current_state(ants, current_iteration, current_ant_idx):
     plt.clf()  # Limpiar frame anterior
-    
+
     pos = {
         city: (coords[0] * 2, coords[1] * 2) 
         for city, coords in const.CITY_POSITIONS.items() 
         if city in const.G.nodes()
     }
 
-    # 1. Dibujar la infraestructura (Caminos y Ciudades)
     # Usamos grosores basados en feromona actual
-    feromonas = [const.G[u][v].get('pheromone', 1) for u, v in const.G.edges()]
-    widths = [min(10.0,0.5 + (f * 1.0)) for f in feromonas]
+    feromonas = [const.G[u][v].get('pheromone', const.init_feromones) for u, v in const.G.edges()]
+    widths = [min(10.0,0.5 + (f * 1.0)) if f >= const.init_feromones else const.init_feromones for f in feromonas]
     edge_labels = nx.get_edge_attributes(const.G, 'weight')
     
-    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color="#150E0E", alpha=0.5)
+    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd , alpha=0.5, edge_vmax=10.0, edge_vmin=0)
     nx.draw_networkx_nodes(const.G, pos, node_size=600, node_color='white', edgecolors='black')
     nx.draw_networkx_labels(const.G, pos, font_size=7)
 
@@ -123,28 +120,23 @@ def draw_current_state(ants, current_iteration, current_ant_idx):
         label_pos=0.5     # 0.5 es justo en medio de la línea
     )
 
-    # 2. DIBUJAR LAS HORMIGAS (Puntos Rojos)
-    # Extraemos la posición (X, Y) de la ciudad actual de cada hormiga activa
     ant_positions = []
     for ant in ants:
-        # Solo dibujamos hormigas que no han terminado y tienen posición válida
         if not ant.finished and ant.current.name in pos:
             ant_positions.append(pos[ant.current.name])
     
     if ant_positions:
-        # Convertimos la lista de tuplas (X,Y) en dos listas [X] y [Y] para scatter
         x_coords, y_coords = zip(*ant_positions)
         plt.scatter(x_coords, y_coords, color='red', s=80, label='Hormigas', zorder=10)
 
-    # Info de la simulación
     plt.title(f"ACO en Vivo - Iteración: {current_iteration} | Hormiga: {current_ant_idx+1}")
     plt.axis('off')
     
     plt.draw()
-    plt.pause(const.velocidad) #CONTROL DE VELOCIDAD POR PASO (0.05s es rápido pero visible)
+    plt.pause(const.velocidad)
 
-def run_simulation(iteration_name=""):
-    plt.clf()  # Limpiar la figura actual para el siguiente frame
+def final_View(iteration_name=""):
+    plt.clf() 
     
     pos = {
         city: (coords[0] * 2, coords[1] * 2) 
@@ -152,15 +144,10 @@ def run_simulation(iteration_name=""):
         if city in const.G.nodes()
     }
 
-    # Calculamos grosores basados en feromona actual
-    feromonas = [const.G[u][v].get('pheromone', 1) for u, v in const.G.edges()]
-    widths = [0.5 + (f * 1.5) for f in feromonas] # Ajuste de grosor
+    feromonas = [const.G[u][v].get('pheromone', 0.1) for u, v in const.G.edges()]
+    widths = [0.5 + (f * 1.5) for f in feromonas]
 
-    # Dibujamos
-    # Dentro de run_simulation:
-    edge_colors = [const.G[u][v]['pheromone'] for u, v in const.G.edges()]
-    # Usará un mapa de color de Amarillo a Rojo (YlOrRd)
-    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=edge_colors, edge_cmap=plt.cm.YlOrRd, alpha=0.7)
+    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd, alpha=0.7)
     nx.draw_networkx_nodes(const.G, pos, node_size=600, node_color='white', edgecolors='black')
     nx.draw_networkx_labels(const.G, pos, font_size=7)
 

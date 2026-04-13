@@ -39,7 +39,7 @@ def update_pheromones(ants):
 
     #DEPÓSITO
     for ant in ants:
-        if ant.current.name == ant.origin_destination:  
+        if ant.current.name == ant.destination:  
             reward = (1 / ant.distance) * 100
             for i in range(len(ant.path) - 1):
                 u = ant.path[i]
@@ -54,6 +54,52 @@ def refresh_graph_data():
         if const.G.has_edge(p.node_origin.name, p.node_destination.name):
             const.G[p.node_origin.name][p.node_destination.name]['pheromone'] = p.pheromone
 
+def insert_pheromone_in_path(ant):
+    if ant.current.name == ant.destination:  
+        reward = (1 / ant.distance) * 100
+        for i in range(len(ant.path) - 1):
+            u = ant.path[i]
+            v = ant.path[i+1]
+            for p in const.paths_list:
+                if p.node_origin == u and p.node_destination == v or (p.node_origin == v and p.node_destination == u):
+                    p.pheromone = min(10, p.pheromone + reward)  
+
+def evaporate_pheromone():
+    for p in const.paths_list:
+        p.pheromone *= (1 - const.evaporation_rate)
+        if p.pheromone < const.min_pheromone: p.pheromone = const.min_pheromone   
+
+def run_aco_ant_independent_simulation(iterations, n_ants):
+    plt.ion()
+    plt.show()
+
+    start_node = const.nodes_directory[const.init_city]
+    
+    colony = [Ant(start_node, destination=const.final_city, origin_destination=const.final_city) for _ in range(n_ants)]
+
+    for i in range(iterations):
+        for ant_idx, ant in enumerate(colony):
+            if ant.current_step >= ant.steps_limit:
+                ant.reset_ant()
+
+            if ant.found:
+                insert_pheromone_in_path(ant)
+                refresh_graph_data() 
+                ant.return_ant()
+
+            if not ant.move_independent():
+                ant.reset_ant()       
+            
+            draw_current_state(colony, current_iteration=i+1)
+
+        # if (i % 3) == 0:
+        evaporate_pheromone()
+        refresh_graph_data() 
+    
+    plt.ioff() # Desactivar modo interactivo
+    print("Simulación completada.")
+    plt.show() # Mantener ventana abierta
+
 def run_aco_simulation(iterations, n_ants):
     plt.ion() # Activar modo interactivo de Matplotlib
     plt.show() # Mostrar ventana vacía
@@ -62,7 +108,7 @@ def run_aco_simulation(iterations, n_ants):
     
     for i in range(iterations):
         colony = [Ant(start_node, const.final_city, const.final_city) for _ in range(n_ants)]
-        
+
         active_ants = True
         step = 0
         while active_ants and step < 50:
@@ -88,13 +134,13 @@ def run_aco_simulation(iterations, n_ants):
         
         # (Opcional) Dibujar un frame final de la iteración con grosores actualizados
         draw_current_state([], i+1, step) 
-        plt.pause(0.5) # Pausa más larga entre iteraciones
+        plt.pause(const.velocidad) # Pausa más larga entre iteraciones
 
     plt.ioff() # Desactivar modo interactivo
     print("Simulación completada.")
     plt.show() # Mantener ventana abierta
     
-def draw_current_state(ants, current_iteration, current_ant_idx):
+def draw_current_state(ants, current_iteration = 0, current_ant_idx = 0):
     plt.clf()  # Limpiar frame anterior
 
     pos = {

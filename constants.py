@@ -9,12 +9,15 @@ paths_list = []
 
 init_feromones = 0.1        #feromona inicial de cada camino
 min_pheromone = 0.1         #tope minimo de feromonas para cada camino
-evaporation_rate = 0.8      #coheficiente de evaporacion de la feromona
+evaporation_rate = 0.1      #coheficiente de evaporacion de la feromona
 alpha = 2                   #importancia de feromona
 beta = 1                    #importancia de distancia
-velocidad = 0.1             #velocidad de la simulacion
-init_city = "Hermosillo"
+velocidad = 0.001             #velocidad de la simulacion
+init_city = "Tijuana"
 final_city = "Chihuahua"
+
+#Ants constanst
+step_limit = 50
 
 
 G = nx.Graph()

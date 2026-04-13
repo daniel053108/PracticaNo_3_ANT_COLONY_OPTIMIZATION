@@ -32,22 +32,21 @@ def create_grafo():
         const.G.add_edge(origin, dest, weight=path.weight, pheromone=path.pheromone)
 
 def update_pheromones(ants):
-    # 1. EVAPORACIÓN
+    #EVAPORACIÓN
     for p in const.paths_list:
         p.pheromone *= (1 - const.evaporation_rate)
         if p.pheromone < const.min_pheromone: p.pheromone = const.min_pheromone
 
-    # 2. DEPÓSITO
+    #DEPÓSITO
     for ant in ants:
-        # IMPORTANTE: Que el destino sea el mismo que en la simulación
-        if ant.current.name == ant.destination:  
-            reward = 1000 / ant.distance  # Aumenté el reward para que sea más notable
+        if ant.current.name == ant.origin_destination:  
+            reward = (1 / ant.distance) * 100
             for i in range(len(ant.path) - 1):
                 u = ant.path[i]
                 v = ant.path[i+1]
                 for p in const.paths_list:
                     if p.node_origin == u and p.node_destination == v or (p.node_origin == v and p.node_destination == u):
-                        p.pheromone += reward
+                        p.pheromone = min(10, p.pheromone + reward)
 
 def refresh_graph_data():
     for p in const.paths_list:
@@ -62,12 +61,14 @@ def run_aco_simulation(iterations, n_ants):
     start_node = const.nodes_directory[const.init_city]
     
     for i in range(iterations):
-        colony = [Ant(start_node, const.final_city, const.init_city) for _ in range(n_ants)]
+        colony = [Ant(start_node, const.final_city, const.final_city) for _ in range(n_ants)]
         
         active_ants = True
         step = 0
         while active_ants and step < 50:
             active_ants = False
+            draw_current_state(colony, i+1, step)
+
             for ant_idx, ant in enumerate(colony):
                 if not ant.finished:
                     if ant.move():
@@ -75,9 +76,9 @@ def run_aco_simulation(iterations, n_ants):
                         if ant.current.name == ant.destination:
                             ant.finished = True
                     else:
-                        ant.finished = True # Atrapada
+                        ant.finished = True
 
-            # DIBUJAR EL MOVIMIENTO DE ESTE PASO
+                # DIBUJAR EL MOVIMIENTO DE ESTE PASO
             draw_current_state(colony, i+1, step)
             step += 1
 
@@ -104,10 +105,10 @@ def draw_current_state(ants, current_iteration, current_ant_idx):
 
     # Usamos grosores basados en feromona actual
     feromonas = [const.G[u][v].get('pheromone', const.init_feromones) for u, v in const.G.edges()]
-    widths = [min(10.0,0.5 + (f * 1.0)) if f >= const.init_feromones else const.init_feromones for f in feromonas]
+    widths = [min(10,0.5 + (f * 10.0)) if f >= const.init_feromones else const.init_feromones for f in feromonas]
     edge_labels = nx.get_edge_attributes(const.G, 'weight')
     
-    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd , alpha=0.5, edge_vmax=10.0, edge_vmin=0)
+    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd, edge_vmax=1, edge_vmin=0)
     nx.draw_networkx_nodes(const.G, pos, node_size=600, node_color='white', edgecolors='black')
     nx.draw_networkx_labels(const.G, pos, font_size=7)
 
@@ -122,14 +123,14 @@ def draw_current_state(ants, current_iteration, current_ant_idx):
 
     ant_positions = []
     for ant in ants:
-        if not ant.finished and ant.current.name in pos:
+        if ant.current.name in pos:
             ant_positions.append(pos[ant.current.name])
     
     if ant_positions:
         x_coords, y_coords = zip(*ant_positions)
         plt.scatter(x_coords, y_coords, color='red', s=80, label='Hormigas', zorder=10)
 
-    plt.title(f"ACO en Vivo - Iteración: {current_iteration} | Hormiga: {current_ant_idx+1}")
+    plt.title(f"ACO en Vivo - Iteración: {current_iteration} | Paso: {current_ant_idx+1}")
     plt.axis('off')
     
     plt.draw()
@@ -145,9 +146,9 @@ def final_View(iteration_name=""):
     }
 
     feromonas = [const.G[u][v].get('pheromone', 0.1) for u, v in const.G.edges()]
-    widths = [0.5 + (f * 1.5) for f in feromonas]
+    widths = [min(0.5 + (f * 10.0)) for f in feromonas]
 
-    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd, alpha=0.7)
+    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd, edge_vmax=1, edge_vmin=0)
     nx.draw_networkx_nodes(const.G, pos, node_size=600, node_color='white', edgecolors='black')
     nx.draw_networkx_labels(const.G, pos, font_size=7)
 

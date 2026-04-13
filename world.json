@@ -49,8 +49,7 @@
   "Hermosillo": [
     ["Santa Ana", 171],
     ["Guaymas", 135],
-    ["Moctezuma", 178],
-    ["Nacozari", 278]
+    ["Moctezuma", 178]
   ],
   "Guaymas": [["Hermosillo", 135], ["Ciudad Obregon", 130]],
   "Ciudad Obregon": [["Guaymas", 130]],

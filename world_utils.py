@@ -107,10 +107,10 @@ def run_aco_simulation(iterations, n_ants):
     plt.ion() # Activar modo interactivo de Matplotlib
     plt.show() # Mostrar ventana vacía
     
-    start_node = const.nodes_directory[const.init_city_]
+    start_node = const.nodes_directory[const.init_city]
     
     for i in range(iterations):
-        colony = [Ant(start_node, const.final_city_, const.final_city_) for _ in range(n_ants)]
+        colony = [Ant(start_node, const.final_city, const.final_city) for _ in range(n_ants)]
 
         active_ants = True
         step = 0

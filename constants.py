@@ -26,8 +26,6 @@ evaporation_rate_ = 0.8      #coheficiente de evaporacion de la feromona
 alpha_ = 2                   #importancia de feromona
 beta_ = 2                    #importancia de distancia
 velocidad_ = 0.1             #velocidad de la simulacion
-init_city_ = "Tijuana"
-final_city_ = "Chihuahua"
 n_iterations_ = 20
 
 

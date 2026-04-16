@@ -237,8 +237,8 @@ def get_best_neighbor(node, visited_nodes):
     return max(neighbors, key=lambda n: n["pheromone"])
 
 def get_final_path():
-    id_inicio = const.init_city if const.mode_independent else const.init_city_
-    id_final = const.final_city if const.mode_independent else const.final_city_
+    id_inicio = const.init_city 
+    id_final = const.final_city 
     
     node = const.nodes_directory[id_inicio]
     target_node = const.nodes_directory[id_final]

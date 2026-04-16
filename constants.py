@@ -34,7 +34,7 @@ n_ants = 10
 step_limit = 50
 
 animations = False
-mode_independent = True
+mode_independent = False
 
 G = nx.Graph()
 

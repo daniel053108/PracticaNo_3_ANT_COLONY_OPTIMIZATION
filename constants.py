@@ -14,9 +14,14 @@ evaporation_rate = 0.07      #coheficiente de evaporacion de la feromona
 alpha = 2                   #importancia de feromona
 beta = 1                    #importancia de distancia
 velocidad = 0.001             #velocidad de la simulacion
-init_city = "Tijuana"
-final_city = "Sonoyta"
+init_city = "San Jose del Cabo"
+final_city = "Parral"
 n_iterations = 200
+
+#San Jose del Cabo
+#Parral
+#Tijuana
+#Rosarito
 
 
 #not_independent_mode
@@ -34,7 +39,7 @@ n_ants = 10
 step_limit = 50
 
 animations = False
-mode_independent = False
+mode_independent = True #Para tijuana rosarito False
 
 G = nx.Graph()
 

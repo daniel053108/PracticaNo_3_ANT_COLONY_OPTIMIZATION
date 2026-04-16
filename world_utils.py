@@ -259,7 +259,7 @@ def get_final_path():
         
     return final_path
 
-def final_View(iteration_name=""):
+def final_View(final_path=None, iteration_name=""):
     plt.clf() 
     
     pos = {
@@ -274,6 +274,26 @@ def final_View(iteration_name=""):
     nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd, edge_vmax=1, edge_vmin=0)
     nx.draw_networkx_nodes(const.G, pos, node_size=600, node_color='white', edgecolors='black')
     nx.draw_networkx_labels(const.G, pos, font_size=7)
+
+    plt.subplots_adjust(right=0.7)
+
+    if final_path:
+        ciudades = [n.name for n in final_path]
+        
+        texto = "Ruta final:\n\n"
+        for i, ciudad in enumerate(ciudades):
+            texto += f"{i+1}. {ciudad}\n"
+
+        # Posición del texto (ajusta si se corta)
+        
+        plt.text(
+            1.05, 0.5,  # 👉 posición a la derecha del mapa
+            texto,
+            transform=plt.gca().transAxes,
+            fontsize=9,
+            verticalalignment='center',
+            bbox=dict(facecolor='white', alpha=0.8)
+        )
 
     plt.title(f"Simulación ACO FINALIZADA - {iteration_name}")
     plt.axis('off')

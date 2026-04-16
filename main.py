@@ -44,7 +44,7 @@ def main():
 
     # Mostramos el mapa final
     print("Generando visualización...")
-    utils.final_View()
+    utils.final_View(final_path)
 
 
 if __name__ == "__main__":

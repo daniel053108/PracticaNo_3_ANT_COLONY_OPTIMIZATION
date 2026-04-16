@@ -7,18 +7,36 @@ with open("world.json", "r", encoding="utf-8") as worldFile:
 nodes_directory = {}
 paths_list = []
 
-init_feromones = 0.1        #feromona inicial de cada camino
+#independent_mode
+init_feromones = 0.5        #feromona inicial de cada camino
 min_pheromone = 0.1         #tope minimo de feromonas para cada camino
-evaporation_rate = 0.1      #coheficiente de evaporacion de la feromona
+evaporation_rate = 0.07      #coheficiente de evaporacion de la feromona
 alpha = 2                   #importancia de feromona
 beta = 1                    #importancia de distancia
 velocidad = 0.001             #velocidad de la simulacion
-init_city = "Tijuana"
-final_city = "Chihuahua"
+init_city = "San Jose del Cabo"
+final_city = "Ojinaga"
+n_iterations = 500
+
+
+#not_independent_mode
+init_feromones_ = 0.1        #feromona inicial de cada camino
+min_pheromone_ = 0.1         #tope minimo de feromonas para cada camino
+evaporation_rate_ = 0.8      #coheficiente de evaporacion de la feromona
+alpha_ = 2                   #importancia de feromona
+beta_ = 2                    #importancia de distancia
+velocidad_ = 0.1             #velocidad de la simulacion
+init_city_ = "Tijuana"
+final_city_ = "Chihuahua"
+n_iterations_ = 20
+
 
 #Ants constanst
+n_ants = 100
 step_limit = 50
 
+animations = False
+mode_independent = True
 
 G = nx.Graph()
 

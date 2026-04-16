@@ -4,39 +4,49 @@ import constants as const
 
 class Ant:
     def __init__(self, start_node, destination, origin_destination):
-        self.start_node = start_node
-        self.current = start_node
+        # Nodos físicos
+        self.start_node = start_node      # El objeto Nodo original (Tijuana)
+        self.current = start_node         # El objeto Nodo donde está parada
+        self.current_start_node = start_node # El objeto Nodo donde inició el viaje ACTUAL
+        
+        # Textos (Nombres de ciudades)
+        self.home_city = start_node.name  # "Tijuana"
+        self.target_city = destination    # "Chihuahua"
+        self.destination = self.target_city # El objetivo del viaje actual ("Chihuahua")
+        
+        # Estadísticas del viaje
         self.path = [start_node]
-        self.return_path = [start_node]
         self.distance = 0
         self.found = False
-        self.returned = False
-        self.destination = destination
-        self.origin_destination = origin_destination
+        self.finished = False
         self.steps_limit = const.step_limit
         self.current_step = 0
-        self.finished = False
 
     def reset_ant(self):
-        self.current = self.start_node
-        self.path = [self.start_node]
+        # Si se pierde o se acaban los pasos, reinicia el viaje desde donde salió
+        self.current = self.current_start_node # Es un OBJETO Nodo (no crasheará)
+        self.path = [self.current]
         self.distance = 0
         self.current_step = 0
-        self.return_path = [self.start_node]
         self.found = False
-        self.returned = False
+        self.finished = False
 
     def return_ant(self):
-        if self.returned:
-            self.returned = False
-            self.destination = self.origin_destination
+        # Llegó a su destino. Ahora el inicio es donde está parada...
+        self.current_start_node = self.current 
+        
+        # ...y el nuevo destino es el lado opuesto.
+        if self.destination == self.target_city:
+            self.destination = self.home_city    # Ahora regresa a Tijuana
         else:
-            self.destination = self.start_node.name
-            self.returned = True
-        self.current_step = 0
+            self.destination = self.target_city  # Ahora va hacia Chihuahua
+            
+        # Limpiamos la memoria para el nuevo viaje
         self.distance = 0
-        self.path = []
+        self.path = [self.current]
         self.found = False
+        self.current_step = 0
+        self.finished = False
 
     def move_independent(self):
         if len(self.path) == 0:
@@ -46,23 +56,6 @@ class Ant:
 
         if not neighbors:
             return False
-        
-        if self.returned:
-            self.return_path.pop()
-            
-            target_node = self.return_path[-1]
-            path = None
-            for p in const.paths_list:
-                if self.current == p.node_origin and target_node == p.node_destination:
-                    path = p
-                    break
-            self.current = target_node
-            self.path.append(self.current)
-            self.distance += path.weight
-            self.current_step += 1
-            if self.current.name == self.destination:
-                self.found = True
-            return True
 
         probs = []
         for p in neighbors:
@@ -80,8 +73,6 @@ class Ant:
 
         self.current = chosen_path.node_destination
         self.path.append(self.current)
-        if not self.returned:
-            self.return_path.append(self.current)
         self.distance += chosen_path.weight
         self.current_step += 1
         if self.current.name == self.destination:

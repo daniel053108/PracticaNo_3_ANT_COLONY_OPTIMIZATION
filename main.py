@@ -9,8 +9,21 @@ def main():
 
     # Ejecutamos la simulación (Ej: 20 iteraciones, 10 hormigas por vez)
     print("Simulando búsqueda de rutas...")
-    utils.run_aco_ant_independent_simulation(iterations=200, n_ants=10)
+    if const.mode_independent:
+        utils.run_aco_ant_independent_simulation(iterations=const.n_iterations, n_ants=const.n_ants)
+    else:
+        utils.run_aco_simulation(iterations=const.n_iterations_, n_ants=const.n_ants)
     
+    final_path = utils.get_final_path()
+
+    print("[")
+    for p in final_path:
+        print(p.name)
+        print("     |")
+        print("     V")
+    
+    print("]")
+
     # Mostramos el mapa final
     print("Generando visualización...")
     utils.final_View()

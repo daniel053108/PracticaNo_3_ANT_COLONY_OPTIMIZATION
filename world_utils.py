@@ -18,10 +18,12 @@ def load_graph():
 
             # Creamos ambos sentidos para que la hormiga pueda ir y volver
             const.paths_list.append(
-                Path(const.nodes_directory[city], dist, const.nodes_directory[neighbor], const.init_feromones)
+                Path(const.nodes_directory[city], dist, const.nodes_directory[neighbor], 
+                     const.init_feromones if const.mode_independent else const.init_feromones_)
             )
             const.paths_list.append(
-                Path(const.nodes_directory[neighbor], dist, const.nodes_directory[city], const.init_feromones)
+                Path(const.nodes_directory[neighbor], dist, const.nodes_directory[city], 
+                     const.init_feromones if const.mode_independent else const.init_feromones_)
             )
 
 def create_grafo():
@@ -34,8 +36,8 @@ def create_grafo():
 def update_pheromones(ants):
     #EVAPORACIÓN
     for p in const.paths_list:
-        p.pheromone *= (1 - const.evaporation_rate)
-        if p.pheromone < const.min_pheromone: p.pheromone = const.min_pheromone
+        p.pheromone *= (1 - const.evaporation_rate_)
+        if p.pheromone < const.min_pheromone_: p.pheromone = const.min_pheromone_
 
     #DEPÓSITO
     for ant in ants:
@@ -56,13 +58,14 @@ def refresh_graph_data():
 
 def insert_pheromone_in_path(ant):
     if ant.current.name == ant.destination:  
-        reward = (1 / ant.distance) * 100
+        reward = (1000 / ant.distance)
         for i in range(len(ant.path) - 1):
             u = ant.path[i]
             v = ant.path[i+1]
             for p in const.paths_list:
                 if p.node_origin == u and p.node_destination == v or (p.node_origin == v and p.node_destination == u):
-                    p.pheromone = min(10, p.pheromone + reward)  
+                    p.pheromone = min(10, p.pheromone + reward)
+                    print(p.pheromone)  
 
 def evaporate_pheromone():
     for p in const.paths_list:
@@ -90,30 +93,29 @@ def run_aco_ant_independent_simulation(iterations, n_ants):
             if not ant.move_independent():
                 ant.reset_ant()       
             
-            draw_current_state(colony, current_iteration=i+1)
+            refresh_graph_data() 
+            if const.animations:
+                draw_current_state(colony, current_iteration=i+1)
 
-        # if (i % 3) == 0:
         evaporate_pheromone()
         refresh_graph_data() 
     
     plt.ioff() # Desactivar modo interactivo
     print("Simulación completada.")
-    plt.show() # Mantener ventana abierta
 
 def run_aco_simulation(iterations, n_ants):
     plt.ion() # Activar modo interactivo de Matplotlib
     plt.show() # Mostrar ventana vacía
     
-    start_node = const.nodes_directory[const.init_city]
+    start_node = const.nodes_directory[const.init_city_]
     
     for i in range(iterations):
-        colony = [Ant(start_node, const.final_city, const.final_city) for _ in range(n_ants)]
+        colony = [Ant(start_node, const.final_city_, const.final_city_) for _ in range(n_ants)]
 
         active_ants = True
         step = 0
         while active_ants and step < 50:
             active_ants = False
-            draw_current_state(colony, i+1, step)
 
             for ant_idx, ant in enumerate(colony):
                 if not ant.finished:
@@ -124,23 +126,21 @@ def run_aco_simulation(iterations, n_ants):
                     else:
                         ant.finished = True
 
-                # DIBUJAR EL MOVIMIENTO DE ESTE PASO
-            draw_current_state(colony, i+1, step)
+            # DIBUJAR EL MOVIMIENTO DE ESTE PASO
+            if const.animations:
+                draw_current_state_(colony, i+1, step)
             step += 1
 
         # Al final de la iteración, actualizamos feromonas y datos
         update_pheromones(colony)
         refresh_graph_data() 
         
-        # (Opcional) Dibujar un frame final de la iteración con grosores actualizados
-        draw_current_state([], i+1, step) 
         plt.pause(const.velocidad) # Pausa más larga entre iteraciones
 
     plt.ioff() # Desactivar modo interactivo
     print("Simulación completada.")
-    plt.show() # Mantener ventana abierta
     
-def draw_current_state(ants, current_iteration = 0, current_ant_idx = 0):
+def draw_current_state(ants, current_iteration = 0):
     plt.clf()  # Limpiar frame anterior
 
     pos = {
@@ -151,9 +151,49 @@ def draw_current_state(ants, current_iteration = 0, current_ant_idx = 0):
 
     # Usamos grosores basados en feromona actual
     feromonas = [const.G[u][v].get('pheromone', const.init_feromones) for u, v in const.G.edges()]
-    widths = [min(10,0.5 + (f * 10.0)) if f >= const.init_feromones else const.init_feromones for f in feromonas]
+    widths = [min(10.0, 0.5 + (f * 10.0)) if f >= 0 else const.init_feromones for f in feromonas]
     edge_labels = nx.get_edge_attributes(const.G, 'weight')
+    nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd, edge_vmax=1, edge_vmin=0)
+    nx.draw_networkx_nodes(const.G, pos, node_size=600, node_color='white', edgecolors='black')
+    nx.draw_networkx_labels(const.G, pos, font_size=7)
+
+    nx.draw_networkx_edge_labels(
+        const.G, 
+        pos, 
+        edge_labels=edge_labels, 
+        font_size=6,      # Tamaño pequeño para que no estorbe
+        font_color='red', # Color llamativo para diferenciarlo del mapa
+        label_pos=0.5     # 0.5 es justo en medio de la línea
+    )
+
+    ant_positions = []
+    for ant in ants:
+        if ant.current.name in pos:
+            ant_positions.append(pos[ant.current.name])
     
+    if ant_positions:
+        x_coords, y_coords = zip(*ant_positions)
+        plt.scatter(x_coords, y_coords, color='red', s=80, label='Hormigas', zorder=10)
+
+    plt.title(f"ACO en Vivo - Iteración: {current_iteration}")
+    plt.axis('off')
+    
+    plt.draw()
+    plt.pause(const.velocidad)
+
+def draw_current_state_(ants, current_iteration = 0, current_ant_idx = 0):
+    plt.clf()  # Limpiar frame anterior
+
+    pos = {
+        city: (coords[0] * 2, coords[1] * 2) 
+        for city, coords in const.CITY_POSITIONS.items() 
+        if city in const.G.nodes()
+    }
+
+    # Usamos grosores basados en feromona actual
+    feromonas = [const.G[u][v].get('pheromone', const.init_feromones_) for u, v in const.G.edges()]
+    widths = [min(10.0, 0.5 + (f * 10.0)) if f >= 0 else const.init_feromones_ for f in feromonas]
+    edge_labels = nx.get_edge_attributes(const.G, 'weight')
     nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd, edge_vmax=1, edge_vmin=0)
     nx.draw_networkx_nodes(const.G, pos, node_size=600, node_color='white', edgecolors='black')
     nx.draw_networkx_labels(const.G, pos, font_size=7)
@@ -182,6 +222,43 @@ def draw_current_state(ants, current_iteration = 0, current_ant_idx = 0):
     plt.draw()
     plt.pause(const.velocidad)
 
+def get_best_neighbor(node, visited_nodes):
+    # Filtramos: el destino NO debe estar en la lista de visitados
+    neighbors = [
+        {"node": p.node_destination, "pheromone": p.pheromone} 
+        for p in const.paths_list 
+        if p.node_origin == node and p.node_destination not in visited_nodes
+    ]
+    
+    if not neighbors:
+        return None
+
+    # Retorna el que tiene más feromona
+    return max(neighbors, key=lambda n: n["pheromone"])
+
+def get_final_path():
+    id_inicio = const.init_city if const.mode_independent else const.init_city_
+    id_final = const.final_city if const.mode_independent else const.final_city_
+    
+    node = const.nodes_directory[id_inicio]
+    target_node = const.nodes_directory[id_final]
+    
+    # Esta lista servirá para el historial y para evitar bucles
+    final_path = [node]
+    
+    while node != target_node:
+        # Pasamos la lista completa de final_path como 'visited_nodes'
+        best_data = get_best_neighbor(node, final_path)
+        
+        if not best_data:
+            print(f"Camino interrumpido en {node.name}: no hay vecinos no visitados.")
+            break
+            
+        node = best_data["node"]
+        final_path.append(node)
+        
+    return final_path
+
 def final_View(iteration_name=""):
     plt.clf() 
     
@@ -192,14 +269,14 @@ def final_View(iteration_name=""):
     }
 
     feromonas = [const.G[u][v].get('pheromone', 0.1) for u, v in const.G.edges()]
-    widths = [min(0.5 + (f * 10.0)) for f in feromonas]
+    widths = [min(10,0.5 + (f * 10.0)) for f in feromonas]
 
     nx.draw_networkx_edges(const.G, pos, width=widths, edge_color=feromonas, edge_cmap=plt.cm.YlOrRd, edge_vmax=1, edge_vmin=0)
     nx.draw_networkx_nodes(const.G, pos, node_size=600, node_color='white', edgecolors='black')
     nx.draw_networkx_labels(const.G, pos, font_size=7)
 
-    plt.title(f"Simulación ACO - {iteration_name}")
+    plt.title(f"Simulación ACO FINALIZADA - {iteration_name}")
     plt.axis('off')
     
-    plt.draw()        # Dibujar sin bloquear
-    plt.pause(const.velocidad)    
+    print("Mostrando mapa final. Cierra la ventana para terminar...")
+    plt.show(block=True)

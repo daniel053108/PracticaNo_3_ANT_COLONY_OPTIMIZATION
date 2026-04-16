@@ -15,7 +15,7 @@ alpha = 2                   #importancia de feromona
 beta = 1                    #importancia de distancia
 velocidad = 0.001             #velocidad de la simulacion
 init_city = "San Jose del Cabo"
-final_city = "Ojinaga"
+final_city = "Parral"
 n_iterations = 500
 
 

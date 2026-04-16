@@ -16,6 +16,22 @@ def main():
     
     final_path = utils.get_final_path()
 
+    total_distance = 0
+
+    for i in range(len(final_path)):
+        print(final_path[i].name)
+
+        if i < len(final_path) - 1:
+            u = final_path[i]
+            v = final_path[i + 1]
+
+            for p in const.paths_list:
+                if p.node_origin == u and p.node_destination == v:
+                    total_distance += p.weight
+                    break
+
+    
+
     print("[")
     for p in final_path:
         print(p.name)
@@ -23,6 +39,8 @@ def main():
         print("     V")
     
     print("]")
+    print("\n Distancia total:", total_distance)
+   
 
     # Mostramos el mapa final
     print("Generando visualización...")

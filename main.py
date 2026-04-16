@@ -23,6 +23,7 @@ def main():
         print("     V")
     
     print("]")
+    
 
     # Mostramos el mapa final
     print("Generando visualización...")

@@ -278,6 +278,18 @@ def final_View(final_path=None, iteration_name=""):
     plt.subplots_adjust(right=0.7)
 
     if final_path:
+        total_distance = 0
+        
+        if final_path:
+            for i in range(len(final_path) - 1):
+                u = final_path[i]
+                v = final_path[i + 1]
+
+                for p in const.paths_list:
+                    if p.node_origin == u and p.node_destination == v:
+                        total_distance += p.weight
+                        break
+                        
         ciudades = [n.name for n in final_path]
         
         texto = "Ruta final:\n\n"
@@ -285,6 +297,8 @@ def final_View(final_path=None, iteration_name=""):
             texto += f"{i+1}. {ciudad}\n"
 
         # Posición del texto (ajusta si se corta)
+
+        texto += f"\n Distancia total: {total_distance}"
         
         plt.text(
             1.05, 0.5,  # 👉 posición a la derecha del mapa

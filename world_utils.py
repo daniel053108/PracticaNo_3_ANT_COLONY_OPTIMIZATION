@@ -243,11 +243,11 @@ def get_final_path():
     node = const.nodes_directory[id_inicio]
     target_node = const.nodes_directory[id_final]
     
-    # Esta lista servirá para el historial y para evitar bucles
+    
     final_path = [node]
     
     while node != target_node:
-        # Pasamos la lista completa de final_path como 'visited_nodes'
+        
         best_data = get_best_neighbor(node, final_path)
         
         if not best_data:
@@ -289,19 +289,19 @@ def final_View(final_path=None, iteration_name=""):
                     if p.node_origin == u and p.node_destination == v:
                         total_distance += p.weight
                         break
-                        
+
         ciudades = [n.name for n in final_path]
         
         texto = "Ruta final:\n\n"
         for i, ciudad in enumerate(ciudades):
             texto += f"{i+1}. {ciudad}\n"
 
-        # Posición del texto (ajusta si se corta)
+        
 
         texto += f"\n Distancia total: {total_distance}"
         
         plt.text(
-            1.05, 0.5,  # 👉 posición a la derecha del mapa
+            1.05, 0.5,  
             texto,
             transform=plt.gca().transAxes,
             fontsize=9,
